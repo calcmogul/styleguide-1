@@ -12,6 +12,7 @@ from wpiformat.cidentlist import CIdentList
 from wpiformat.clangformat import ClangFormat
 from wpiformat.config import Config
 from wpiformat.eofnewline import EofNewline
+from wpiformat.funcorder import FuncOrder
 from wpiformat.includeguard import IncludeGuard
 from wpiformat.includeorder import IncludeOrder
 from wpiformat.javaclass import JavaClass
@@ -351,6 +352,7 @@ def main():
         BraceComment(),
         CIdentList(),
         EofNewline(),
+        FuncOrder(),
         IncludeGuard(),
         LicenseUpdate(),
         JavaClass(),
