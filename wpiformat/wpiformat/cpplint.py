@@ -2712,12 +2712,6 @@ def CheckStyle(filename, clean_lines, linenum, is_header, nesting_state, error):
 
 
 _RE_PATTERN_INCLUDE = regex.compile(r'^\s*#\s*include\s*([<"])([^>"]*)[>"].*$')
-# Matches the first component of a filename delimited by -s and _s. That is:
-#  _RE_FIRST_COMPONENT.match('foo').group(0) == 'foo'
-#  _RE_FIRST_COMPONENT.match('foo.cc').group(0) == 'foo'
-#  _RE_FIRST_COMPONENT.match('foo-bar_baz.cc').group(0) == 'foo'
-#  _RE_FIRST_COMPONENT.match('foo_bar-baz.cc').group(0) == 'foo'
-_RE_FIRST_COMPONENT = regex.compile(r'^[^-_.]+')
 
 
 def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
