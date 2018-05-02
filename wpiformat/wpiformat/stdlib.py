@@ -171,6 +171,8 @@ class Stdlib(Task):
         return config_file.is_cpp_file(name)
 
     def run_pipeline(self, config_file, name, lines):
+        linesep = Task.get_linesep(lines)
+
         for header in self.headers:
             # Prepare include names
             before = ""
@@ -182,9 +184,12 @@ class Stdlib(Task):
                 before = "c" + header.name
                 after = header.name + ".h"
 
-            if "#include <" + before + ">" in lines:
-                lines = lines.replace("#include <" + before + ">",
-                                      "#include <" + after + ">")
+            lines_list = lines.split(linesep)
+            for i, line in enumerate(lines_list):
+                if "#include <" + before + ">" in line and "NOLINT" not in line:
+                    lines_list[i] = line.replace("#include <" + before + ">",
+                                                 "#include <" + after + ">")
+            lines = linesep.join(lines_list)
 
             if header.func_regex:
                 lines = self.func_substitute(header, lines)

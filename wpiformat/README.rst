@@ -57,6 +57,8 @@ The regex for C system headers produces false positives on headers from "other l
 
 ``NOLINT`` can be appended in a comment to a header include to prevent wpiformat's header include sorter from modifying it and to maintain its relative ordering with other header includes. This will, in effect, treat it as a barrier across which no header includes will be moved. Header includes on each side of the barrier will still be sorted as normal.
 
+``NOLINT`` can also prevent wpiformat converting C standard library header includes within a C++ header to the equivalent C++ standard library header include. This is supported for projects which use the same file extension for C and C++ header files.
+
 .styleguide-license
 -------------------
 

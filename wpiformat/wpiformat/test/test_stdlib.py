@@ -89,4 +89,13 @@ def test_stdlib():
     test.add_input("./Main.cpp", "typedef integer std::uint8_t;")
     test.add_output("typedef integer uint8_t;", True, True)
 
+    # Includes with "NOLINT on that line shouldn't be touched
+    test.add_input("./Test.h",
+        "#ifdef __cplusplus" + os.linesep + \
+        "#include <cstddef>" + os.linesep + \
+        "#else" + os.linesep + \
+        "#include <stddef.h>  // NOLINT" + os.linesep + \
+        "#endif" + os.linesep)
+    test.add_latest_input_as_output(True)
+
     test.run(OutputType.FILE)
