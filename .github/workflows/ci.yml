@@ -3,9 +3,14 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test-windows:
-    name: Test - Windows
-    runs-on: windows-latest
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        python-version: [3.6, 3.7, 3.8]
+    name: Test - ${{ matrix.os }}, ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
 
@@ -16,18 +21,28 @@ jobs:
         git branch -f master origin/master
 
     - name: Install clang-format
+      shell: bash
       run: |
-        choco install llvm --version 10.0.0
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get install clang-format-10
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          choco install llvm --version 10.0.0
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install clang-format
+        else
+          echo "$RUNNER_OS not supported"
+          exit 1
+        fi
 
-    - name: Set up Python 3.8
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
 
     - name: Install wpiformat
       run: |
         cd wpiformat
-        pip3 install -e .
+        pip install -e .
 
     - name: Run unit tests
       run: |
@@ -38,7 +53,7 @@ jobs:
         # because it returns a nonzero exit code due to a warning. If it were
         # installed by "setup.py test", it would make "setup.py test" report an
         # error.
-        pip3 install iniconfig
+        pip install iniconfig
         python setup.py test
 
     - name: wpiformat - whole repo
@@ -62,120 +77,6 @@ jobs:
       run: |
         cd wpiformat
         python -m wpiformat -f wpiformat -v
-
-    - name: Ensure formatter made no changes
-      run: git --no-pager diff --exit-code HEAD
-  test-linux:
-    name: Test - Linux
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Fetch all history and metadata
-      run: git fetch --prune --unshallow
-
-    - name: Ensure master branch exists
-      run: git branch master origin/master
-
-    - name: Install clang-format
-      run: |
-        sudo apt-get install clang-format-10
-
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Install wpiformat
-      run: |
-        cd wpiformat
-        pip3 install -e .
-
-    - name: Run unit tests
-      run: |
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        cd wpiformat
-        python3 setup.py test
-
-    - name: wpiformat - whole repo
-      run: |
-        python3 -m wpiformat -v
-
-    - name: wpiformat - one file
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat/__init__.py -v
-
-    - name: wpiformat - absolute path to file
-      run: python3 -m wpiformat -f /home/runner/work/styleguide/styleguide/wpiformat/wpiformat/__init__.py -v
-
-    - name: wpiformat - multiple files
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat/__init__.py wpiformat/__main__.py -v
-
-    - name: wpiformat - directory
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat -v
-
-    - name: Ensure formatter made no changes
-      run: git --no-pager diff --exit-code HEAD
-  test-macos:
-    name: Test - macOS
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Fetch all history and metadata
-      run: |
-        git fetch --prune --unshallow
-        git checkout -b pr
-        git branch -f master origin/master
-
-    - name: Install clang-format
-      run: |
-        brew install clang-format
-
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Install wpiformat
-      run: |
-        cd wpiformat
-        pip3 install -e .
-
-    - name: Run unit tests
-      run: |
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        cd wpiformat
-        python3 setup.py test
-
-    - name: wpiformat - whole repo
-      run: |
-        python3 -m wpiformat -v
-
-    - name: wpiformat - one file
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat/__init__.py -v
-
-    - name: wpiformat - absolute path to file
-      run: python3 -m wpiformat -f /Users/runner/work/styleguide/styleguide/wpiformat/wpiformat/__init__.py -v
-
-    - name: wpiformat - multiple files
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat/__init__.py wpiformat/__main__.py -v
-
-    - name: wpiformat - directory
-      run: |
-        cd wpiformat
-        python3 -m wpiformat -f wpiformat -v
 
     - name: Ensure formatter made no changes
       run: git --no-pager diff --exit-code HEAD
